@@ -20,9 +20,16 @@
                         {{ current_user.role.upper() }}
                     </span>
                 </div>
-                <a href="{{ url_for('auth.logout') }}" style="color: #f56565; text-decoration: none; font-size: 14px;">
-                    Logout
-                </a>
+                <div style="font-size: 14px;">
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('auth.manage_users') }}" style="color: #63b3ed; text-decoration: none; margin-right: 15px;">
+                        Manage Users
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" style="color: #f56565; text-decoration: none;">
+                        Logout
+                    </a>
+                </div>
             </div>
         </div>
         

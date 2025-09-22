@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
-from app.models import District
+from app.models import District, User
+from app import db
+import os
 
 bp = Blueprint('main', __name__)
 
