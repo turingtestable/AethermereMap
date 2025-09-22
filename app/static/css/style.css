@@ -83,6 +83,12 @@ body {
     border-left: 4px solid #63b3ed;
 }
 
+#district-info {
+    white-space: pre-line;
+    line-height: 1.4;
+    margin: 8px 0;
+}
+
 .info-header {
     display: flex;
     justify-content: space-between;
@@ -167,8 +173,12 @@ body {
 }
 
 .form-group textarea {
-    height: 60px;
+    height: 100px;
+    min-height: 100px;
+    max-height: 300px;
     resize: vertical;
+    line-height: 1.4;
+    white-space: pre-wrap;
 }
 
 .button-group {

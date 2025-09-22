@@ -19,7 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Regular click - show info and edit button
                 currentSelectedDistrict = this;
                 document.getElementById('district-name').textContent = name;
-                document.getElementById('district-info').textContent = info;
+                // Display info with preserved line breaks
+                const infoElement = document.getElementById('district-info');
+                infoElement.innerHTML = info.replace(/\n/g, '<br>');
                 document.getElementById('district-status').textContent = 'Status: ' + status;
                 
                 // Update border color to match district color
@@ -150,7 +152,9 @@ function saveDistrict() {
             // Update info panel if this district is currently selected
             if (currentSelectedDistrict === currentEditingDistrict) {
                 document.getElementById('district-name').textContent = newName;
-                document.getElementById('district-info').textContent = newInfo;
+                // Update info panel with preserved line breaks
+                const infoElement = document.getElementById('district-info');
+                infoElement.innerHTML = newInfo.replace(/\n/g, '<br>');
                 document.getElementById('district-status').textContent = 'Status: ' + newStatus;
             }
             

@@ -70,7 +70,7 @@ districts_data = [
     {
         'district_number': 12, 'name': 'District 12', 'info': 'To be determined as the campaign develops.',
         'status': 'Unknown', 'color': '#4a5568', 'svg_path': 'M 200,200 L 164,67 A 140,140 0 0,1 236,67 Z',
-        'label_x': 218, 'label_y': 75
+        'label_x': 200, 'label_y': 67
     }
 ]
 
