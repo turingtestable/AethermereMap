@@ -13,4 +13,3 @@ pip-delete-this-directory.txt
 .vscode/
 .idea/
 *.log
-migrations/
