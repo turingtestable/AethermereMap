@@ -99,3 +99,56 @@ def delete_user(user_id):
     db.session.commit()
     
     return jsonify({'message': 'User deleted successfully'})
+
+@bp.route('/admin/users/<int:user_id>/reset-password', methods=['POST'])
+@login_required
+def reset_user_password(user_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    
+    if user.id == current_user.id:
+        return jsonify({'error': 'Cannot reset your own password'}), 400
+    
+    # Set password to a default value
+    default_password = 'welcome123'
+    user.set_password(default_password)
+    db.session.commit()
+    
+    return jsonify({
+        'message': f'Password reset for {user.username}',
+        'new_password': default_password
+    })
+
+@bp.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        
+        # Validate current password
+        if not current_user.check_password(current_password):
+            flash('Current password is incorrect.', 'error')
+            return render_template('auth/change_password.html')
+        
+        # Validate new password
+        if len(new_password) < 6:
+            flash('New password must be at least 6 characters long.', 'error')
+            return render_template('auth/change_password.html')
+        
+        # Validate password confirmation
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return render_template('auth/change_password.html')
+        
+        # Update password
+        current_user.set_password(new_password)
+        db.session.commit()
+        
+        flash('Password changed successfully!', 'success')
+        return redirect(url_for('main.index'))
+    
+    return render_template('auth/change_password.html')

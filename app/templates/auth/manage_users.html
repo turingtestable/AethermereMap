@@ -181,6 +181,9 @@
                     </td>
                     <td>
                         {% if user.id != current_user.id %}
+                        <button class="btn" onclick="resetPassword({{ user.id }}, '{{ user.username }}')" style="background: #f6ad55; margin-right: 0.5rem;">
+                            Reset Password
+                        </button>
                         <button class="btn btn-danger" onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
                             Delete
                         </button>
@@ -230,6 +233,9 @@
                             </span>
                         </td>
                         <td>
+                            <button class="btn" onclick="resetPassword(${result.user.id}, '${result.user.username}')" style="background: #f6ad55; margin-right: 0.5rem;">
+                                Reset Password
+                            </button>
                             <button class="btn btn-danger" onclick="deleteUser(${result.user.id}, '${result.user.username}')">
                                 Delete
                             </button>
@@ -263,6 +269,29 @@
                         row.remove();
                     }
                     
+                    document.getElementById('formMessage').innerHTML = '<div class="success">' + result.message + '</div>';
+                } else {
+                    document.getElementById('formMessage').innerHTML = '<div class="error">' + result.error + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('formMessage').innerHTML = '<div class="error">An error occurred. Please try again.</div>';
+            }
+        }
+        
+        async function resetPassword(userId, username) {
+            if (!confirm(`Reset password for user "${username}" to default password?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/auth/admin/users/${userId}/reset-password`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`Password reset successfully!\n\nUsername: ${username}\nNew password: ${result.new_password}\n\nPlease share this with the user and tell them to change it immediately.`);
                     document.getElementById('formMessage').innerHTML = '<div class="success">' + result.message + '</div>';
                 } else {
                     document.getElementById('formMessage').innerHTML = '<div class="error">' + result.error + '</div>';
