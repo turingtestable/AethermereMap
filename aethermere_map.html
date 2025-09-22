@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aethermere City Map</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+            font-family: 'Georgia', serif;
+            color: #e2e8f0;
+        }
+        
+        .map-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a202c;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .map-title {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #63b3ed;
+            text-shadow: 0 0 10px rgba(99, 179, 237, 0.5);
+        }
+        
+        .map-subtitle {
+            text-align: center;
+            font-style: italic;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+        
+        #map-svg {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #4a5568;
+            border-radius: 10px;
+            background: radial-gradient(circle at center, #2d3748, #1a202c);
+        }
+        
+        .district {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            stroke: #2d3748;
+            stroke-width: 1;
+        }
+        
+        .district:hover {
+            filter: brightness(1.3);
+            stroke-width: 3;
+        }
+        
+        .district-label {
+            font-family: 'Georgia', serif;
+            font-size: 12px;
+            text-anchor: middle;
+            fill: #f7fafc;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+        
+        .hour-marker {
+            fill: #718096;
+            font-size: 10px;
+            text-anchor: middle;
+        }
+        
+        .mere {
+            fill: url(#mereGradient);
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
+        }
+        
+        .sealed {
+            fill: url(#sealedPattern);
+            opacity: 0.8;
+        }
+        
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2d3748;
+            border-radius: 8px;
+            border-left: 4px solid #63b3ed;
+        }
+        
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .edit-btn {
+            background: #63b3ed;
+            color: #1a202c;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .edit-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .edit-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a202c;
+            border: 2px solid #63b3ed;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 400px;
+        }
+        
+        .edit-panel h3 {
+            color: #63b3ed;
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 5px;
+            color: #e2e8f0;
+            font-family: 'Georgia', serif;
+        }
+        
+        .form-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: #63b3ed;
+            color: #1a202c;
+        }
+        
+        .btn-secondary {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        .btn:hover {
+            opacity: 0.8;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <h1 class="map-title">The City of Aethermere</h1>
+        <p class="map-subtitle">Twenty years after The Weeping</p>
+        
+        <svg id="map-svg" viewBox="0 0 400 400">
+            <!-- Gradients and Patterns -->
+            <defs>
+                <radialGradient id="mereGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#1a202c"/>
+                    <stop offset="70%" style="stop-color:#2d3748"/>
+                    <stop offset="100%" style="stop-color:#4a5568"/>
+                </radialGradient>
+                
+                <pattern id="sealedPattern" patternUnits="userSpaceOnUse" width="8" height="8">
+                    <rect width="8" height="8" fill="#742a2a"/>
+                    <path d="M0,8 L8,0 M-2,2 L2,-2 M6,10 L10,6" stroke="#f56565" stroke-width="1"/>
+                </pattern>
+            </defs>
+            
+            <!-- Hour markers -->
+            <g id="hour-markers">
+                <!-- 12 o'clock -->
+                <text x="200" y="25" class="hour-marker">XII</text>
+                <!-- 3 o'clock -->
+                <text x="375" y="205" class="hour-marker">III</text>
+                <!-- 6 o'clock -->
+                <text x="200" y="385" class="hour-marker">VI</text>
+                <!-- 9 o'clock -->
+                <text x="25" y="205" class="hour-marker">IX</text>
+            </g>
+            
+            <!-- 12 Districts (30 degrees each, starting from 12 o'clock) -->
+            
+            <!-- District 1 (1 o'clock - 15° to 45°) -->
+            <path d="M 200,200 L 236,67 A 140,140 0 0,1 299,101 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 1"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- District 2 (2 o'clock - 45° to 75°) -->
+            <path d="M 200,200 L 299,101 A 140,140 0 0,1 333,158 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 2"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- Dawnward - District 3 (3 o'clock - 75° to 105°) - SEALED -->
+            <path d="M 200,200 L 333,158 A 140,140 0 0,1 333,242 Z" 
+                  class="district sealed" 
+                  data-name="Dawnward (3rd)"
+                  data-info="Sealed District - Dangerous magical effects from The Weeping. Ratmen stronghold underneath."
+                  data-status="Sealed - Dangerous"/>
+            
+            <!-- District 4 (4 o'clock - 105° to 135°) -->
+            <path d="M 200,200 L 333,242 A 140,140 0 0,1 299,299 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 4"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- Goldmark - District 5 (5 o'clock - 135° to 165°) -->
+            <path d="M 200,200 L 299,299 A 140,140 0 0,1 236,333 Z" 
+                  class="district" 
+                  style="fill:#d69e2e"
+                  data-name="Goldmark (5th)"
+                  data-info="Commercial heart - Guild halls, markets, active trade."
+                  data-status="Active"/>
+            
+            <!-- Greywater - District 6 (6 o'clock - 165° to 195°) -->
+            <path d="M 200,200 L 236,333 A 140,140 0 0,1 164,333 Z" 
+                  class="district" 
+                  style="fill:#2b6cb0"
+                  data-name="Greywater (6th)"
+                  data-info="Working class, docks. Renamed from Brightwater after The Weeping."
+                  data-status="Struggling"/>
+            
+            <!-- District 7 (7 o'clock - 195° to 225°) -->
+            <path d="M 200,200 L 164,333 A 140,140 0 0,1 101,299 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 7"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- District 8 (8 o'clock - 225° to 255°) -->
+            <path d="M 200,200 L 101,299 A 140,140 0 0,1 67,242 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 8"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- District 9 (9 o'clock - 255° to 285°) -->
+            <path d="M 200,200 L 67,242 A 140,140 0 0,1 67,158 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 9"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- District 10 (10 o'clock - 285° to 315°) -->
+            <path d="M 200,200 L 67,158 A 140,140 0 0,1 101,101 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 10"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- District 11 (11 o'clock - 315° to 345°) -->
+            <path d="M 200,200 L 101,101 A 140,140 0 0,1 164,67 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 11"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- District 12 (12 o'clock - 345° to 15°) -->
+            <path d="M 200,200 L 164,67 A 140,140 0 0,1 236,67 Z" 
+                  class="district" 
+                  style="fill:#4a5568"
+                  data-name="District 12"
+                  data-info="To be determined as the campaign develops."
+                  data-status="Unknown"/>
+            
+            <!-- The Mere (Center) -->
+            <circle cx="200" cy="200" r="45" class="mere"/>
+            
+            <!-- District Labels positioned at midpoint of each segment -->
+            <text x="218" y="75" class="district-label">District 12</text>
+            <text x="268" y="88" class="district-label">District 1</text>
+            <text x="316" y="130" class="district-label">District 2</text>
+            <text x="333" y="200" class="district-label">Dawnward</text>
+            <text x="316" y="270" class="district-label">District 4</text>
+            <text x="268" y="312" class="district-label">Goldmark</text>
+            <text x="200" y="325" class="district-label">Greywater</text>
+            <text x="132" y="312" class="district-label">District 7</text>
+            <text x="84" y="270" class="district-label">District 8</text>
+            <text x="67" y="200" class="district-label">District 9</text>
+            <text x="84" y="130" class="district-label">District 10</text>
+            <text x="132" y="88" class="district-label">District 11</text>
+            
+            <!-- The Mere Label -->
+            <text x="200" y="205" class="district-label" style="fill:#63b3ed; font-size:14px; font-weight:bold;">The Mere</text>
+        </svg>
+        
+        <div class="info-panel">
+            <div class="info-header">
+                <h3 id="district-name">Click a district to learn more</h3>
+                <button class="edit-btn" id="edit-btn" onclick="editCurrentDistrict()" style="display: none;">Edit</button>
+            </div>
+            <p id="district-info">Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
+            <p id="district-status"></p>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(45deg, #742a2a, #f56565);"></div>
+                <span>Sealed District (Dangerous)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d69e2e;"></div>
+                <span>Commercial/Active (Gold)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2b6cb0;"></div>
+                <span>Working Class/Industrial (Blue)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #38a169;"></div>
+                <span>Residential/Productive (Green)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #805ad5;"></div>
+                <span>Religious/Administrative (Purple)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #c53030;"></div>
+                <span>Dangerous/Polluted (Red)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #553c9a;"></div>
+                <span>Wealthy/Elite (Dark Purple)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4a5568;"></div>
+                <span>To Be Determined (Gray)</span>
+            </div>
+        </div>
+        
+        <!-- Edit Panel -->
+        <div class="overlay" id="overlay"></div>
+        <div class="edit-panel" id="edit-panel">
+            <h3>Edit District</h3>
+            <div class="form-group">
+                <label for="edit-name">District Name:</label>
+                <input type="text" id="edit-name" placeholder="e.g., Goldmark (5th)">
+            </div>
+            <div class="form-group">
+                <label for="edit-info">Description:</label>
+                <textarea id="edit-info" placeholder="Describe this district..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-status">Status:</label>
+                <input type="text" id="edit-status" placeholder="e.g., Active, Struggling, Dangerous">
+            </div>
+            <div class="form-group">
+                <label for="edit-type">District Type:</label>
+                <select id="edit-type">
+                    <option value="#4a5568">To Be Determined (Gray)</option>
+                    <option value="#d69e2e">Commercial/Active (Gold)</option>
+                    <option value="#2b6cb0">Working Class/Industrial (Blue)</option>
+                    <option value="#38a169">Residential/Productive (Green)</option>
+                    <option value="#805ad5">Religious/Administrative (Purple)</option>
+                    <option value="#c53030">Dangerous/Polluted (Red)</option>
+                    <option value="#553c9a">Wealthy/Elite (Dark Purple)</option>
+                    <option value="sealed">Sealed District (Red Pattern)</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="closeEditPanel()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDistrict()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEditingDistrict = null;
+        let currentSelectedDistrict = null;
+        
+        // Default district data
+        const defaultDistrictData = {
+            'District 12': { name: 'District 12', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'District 1': { name: 'District 1', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'District 2': { name: 'District 2', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'Dawnward (3rd)': { name: 'Dawnward (3rd)', info: 'Sealed District - Dangerous magical effects from The Weeping. Ratmen stronghold underneath.', status: 'Sealed - Dangerous', color: 'sealed' },
+            'District 4': { name: 'District 4', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'Goldmark (5th)': { name: 'Goldmark (5th)', info: 'Commercial heart - Guild halls, markets, active trade.', status: 'Active', color: '#d69e2e' },
+            'Greywater (6th)': { name: 'Greywater (6th)', info: 'Working class, docks. Renamed from Brightwater after The Weeping.', status: 'Struggling', color: '#2b6cb0' },
+            'District 7': { name: 'District 7', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'District 8': { name: 'District 8', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'District 9': { name: 'District 9', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'District 10': { name: 'District 10', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' },
+            'District 11': { name: 'District 11', info: 'To be determined as the campaign develops.', status: 'Unknown', color: '#4a5568' }
+        };
+
+        // Load district data from localStorage or use defaults
+        function loadDistrictData() {
+            const saved = localStorage.getItem('aethermere_districts');
+            return saved ? JSON.parse(saved) : { ...defaultDistrictData };
+        }
+        
+        // Save district data to localStorage
+        function saveDistrictData(data) {
+            localStorage.setItem('aethermere_districts', JSON.stringify(data));
+        }
+        
+        // Initialize district data
+        let districtData = loadDistrictData();
+        
+        // Apply saved data to districts on page load
+        function initializeDistricts() {
+            document.querySelectorAll('.district').forEach(district => {
+                const name = district.dataset.name;
+                const data = districtData[name];
+                
+                if (data) {
+                    // Update dataset attributes
+                    district.dataset.name = data.name;
+                    district.dataset.info = data.info;
+                    district.dataset.status = data.status;
+                    
+                    // Update visual appearance
+                    if (data.color === 'sealed') {
+                        district.classList.add('sealed');
+                        district.style.fill = '';
+                    } else {
+                        district.classList.remove('sealed');
+                        district.style.fill = data.color;
+                    }
+                    
+                    // Update label if name changed
+                    const labels = document.querySelectorAll('.district-label');
+                    labels.forEach(label => {
+                        const originalName = Object.keys(defaultDistrictData).find(key => 
+                            label.textContent === key || label.textContent === key.split('(')[0].trim()
+                        );
+                        if (originalName && districtData[originalName] && districtData[originalName].name === data.name) {
+                            label.textContent = data.name.includes('(') ? data.name.split('(')[0].trim() : data.name;
+                        }
+                    });
+                }
+            });
+        }
+
+        // Add interactivity
+        document.querySelectorAll('.district').forEach(district => {
+            district.addEventListener('click', function() {
+                const name = this.dataset.name;
+                const data = districtData[name] || districtData[Object.keys(districtData).find(key => 
+                    districtData[key].name === name
+                )];
+                
+                // If it's a TBD district or Ctrl+click, open edit panel directly
+                if (data && (data.status === 'Unknown' || event.ctrlKey)) {
+                    openEditPanel(this, data);
+                } else if (data) {
+                    // Regular click - show info and edit button
+                    currentSelectedDistrict = this;
+                    document.getElementById('district-name').textContent = data.name;
+                    document.getElementById('district-info').textContent = data.info;
+                    document.getElementById('district-status').textContent = 'Status: ' + data.status;
+                    
+                    // Show edit button for defined districts
+                    document.getElementById('edit-btn').style.display = 'inline-block';
+                    
+                    // Highlight selected district
+                    document.querySelectorAll('.district').forEach(d => {
+                        d.style.strokeWidth = '1';
+                        d.style.stroke = '#2d3748';
+                    });
+                    this.style.strokeWidth = '3';
+                    this.style.stroke = '#63b3ed';
+                }
+            });
+            
+            // Prevent context menu on right click
+            district.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                const name = this.dataset.name;
+                const data = districtData[name] || districtData[Object.keys(districtData).find(key => 
+                    districtData[key].name === name
+                )];
+                if (data) openEditPanel(this, data);
+            });
+        });
+        
+        // Function to edit the currently selected district
+        function editCurrentDistrict() {
+            if (currentSelectedDistrict) {
+                const name = currentSelectedDistrict.dataset.name;
+                const data = districtData[name] || districtData[Object.keys(districtData).find(key => 
+                    districtData[key].name === name
+                )];
+                if (data) {
+                    openEditPanel(currentSelectedDistrict, data);
+                }
+            }
+        }
+        
+        function openEditPanel(districtElement, data) {
+            currentEditingDistrict = districtElement;
+            
+            document.getElementById('edit-name').value = data.name;
+            document.getElementById('edit-info').value = data.info;
+            document.getElementById('edit-status').value = data.status;
+            document.getElementById('edit-type').value = data.color;
+            
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('edit-panel').style.display = 'block';
+        }
+        
+        function closeEditPanel() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('edit-panel').style.display = 'none';
+            currentEditingDistrict = null;
+        }
+        
+        function saveDistrict() {
+            if (!currentEditingDistrict) return;
+            
+            const newName = document.getElementById('edit-name').value;
+            const newInfo = document.getElementById('edit-info').value;
+            const newStatus = document.getElementById('edit-status').value;
+            const newColor = document.getElementById('edit-type').value;
+            
+            // Update district data
+            const oldName = currentEditingDistrict.dataset.name;
+            
+            // Find the original key for this district
+            const originalKey = Object.keys(districtData).find(key => 
+                districtData[key].name === oldName || key === oldName
+            );
+            
+            if (originalKey) {
+                districtData[originalKey] = {
+                    name: newName,
+                    info: newInfo,
+                    status: newStatus,
+                    color: newColor
+                };
+                
+                // Save to localStorage
+                saveDistrictData(districtData);
+            }
+            
+            // Update district element
+            currentEditingDistrict.dataset.name = newName;
+            currentEditingDistrict.dataset.info = newInfo;
+            currentEditingDistrict.dataset.status = newStatus;
+            
+            // Update visual appearance
+            if (newColor === 'sealed') {
+                currentEditingDistrict.classList.add('sealed');
+                currentEditingDistrict.style.fill = '';
+            } else {
+                currentEditingDistrict.classList.remove('sealed');
+                currentEditingDistrict.style.fill = newColor;
+            }
+            
+            // Update label
+            const labels = document.querySelectorAll('.district-label');
+            labels.forEach(label => {
+                if (label.textContent === oldName || label.textContent.includes(oldName.split('(')[0].trim())) {
+                    label.textContent = newName.includes('(') ? newName.split('(')[0].trim() : newName;
+                }
+            });
+            
+            // Update info panel if this district is currently selected
+            document.getElementById('district-name').textContent = newName;
+            document.getElementById('district-info').textContent = newInfo;
+            document.getElementById('district-status').textContent = 'Status: ' + newStatus;
+            
+            closeEditPanel();
+        }
+        
+        // Reset function (optional - for debugging or starting over)
+        function resetAllDistricts() {
+            if (confirm('Are you sure you want to reset all districts to default? This cannot be undone.')) {
+                localStorage.removeItem('aethermere_districts');
+                location.reload();
+            }
+        }
+        
+        // Initialize districts when page loads
+        window.addEventListener('load', initializeDistricts);
+        
+        // Close panel when clicking overlay
+        document.getElementById('overlay').addEventListener('click', closeEditPanel);
+        
+        // Hide edit button when clicking elsewhere
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.district') && !e.target.closest('.info-panel')) {
+                document.getElementById('edit-btn').style.display = 'none';
+                currentSelectedDistrict = null;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aethermere City Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="map-container">
+        <h1 class="map-title">The City of Aethermere</h1>
+        <p class="map-subtitle">Twenty years after The Weeping</p>
+        
+        <svg id="map-svg" viewBox="0 0 400 400">
+            <!-- Gradients and Patterns -->
+            <defs>
+                <radialGradient id="mereGradient" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#1a202c"/>
+                    <stop offset="70%" style="stop-color:#2d3748"/>
+                    <stop offset="100%" style="stop-color:#4a5568"/>
+                </radialGradient>
+                
+                <pattern id="sealedPattern" patternUnits="userSpaceOnUse" width="8" height="8">
+                    <rect width="8" height="8" fill="#742a2a"/>
+                    <path d="M0,8 L8,0 M-2,2 L2,-2 M6,10 L10,6" stroke="#f56565" stroke-width="1"/>
+                </pattern>
+            </defs>
+            
+            <!-- Hour markers -->
+            <g id="hour-markers">
+                <text x="200" y="25" class="hour-marker">XII</text>
+                <text x="375" y="205" class="hour-marker">III</text>
+                <text x="200" y="385" class="hour-marker">VI</text>
+                <text x="25" y="205" class="hour-marker">IX</text>
+            </g>
+            
+            <!-- Districts (dynamically generated from database) -->
+            {% for district in districts %}
+            <path d="{{ district.svg_path }}" 
+                  class="district{% if district.color == 'sealed' %} sealed{% endif %}" 
+                  {% if district.color != 'sealed' %}style="fill:{{ district.color }}"{% endif %}
+                  data-id="{{ district.id }}"
+                  data-name="{{ district.name }}"
+                  data-info="{{ district.info or 'To be determined as the campaign develops.' }}"
+                  data-status="{{ district.status or 'Unknown' }}"
+                  data-color="{{district.color}}"/>
+            {% endfor %}
+            
+            <!-- The Mere (Center) -->
+            <circle cx="200" cy="200" r="45" class="mere"/>
+            
+            <!-- District Labels -->
+            {% for district in districts %}
+            <text x="{{ district.label_x }}" y="{{ district.label_y }}" 
+                  class="district-label"
+                  data-district-id="{{ district.id }}">
+                {% if '(' in district.name %}
+                    {{ district.name.split('(')[0].strip() }}
+                {% else %}
+                    {{ district.name }}
+                {% endif %}
+            </text>
+            {% endfor %}
+            
+            <!-- The Mere Label -->
+            <text x="200" y="205" class="district-label" style="fill:#63b3ed; font-size:14px; font-weight:bold;">The Mere</text>
+        </svg>
+        
+        <div class="info-panel">
+            <div class="info-header">
+                <h3 id="district-name">Click a district to learn more</h3>
+                <button class="edit-btn" id="edit-btn" onclick="editCurrentDistrict()" style="display: none;">Edit</button>
+            </div>
+            <p id="district-info">Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
+            <p id="district-status"></p>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(45deg, #742a2a, #f56565);"></div>
+                <span>Sealed District (Dangerous)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d69e2e;"></div>
+                <span>Commercial/Active (Gold)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2b6cb0;"></div>
+                <span>Working Class/Industrial (Blue)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #38a169;"></div>
+                <span>Residential/Productive (Green)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #805ad5;"></div>
+                <span>Religious/Administrative (Purple)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #c53030;"></div>
+                <span>Dangerous/Polluted (Red)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #553c9a;"></div>
+                <span>Wealthy/Elite (Dark Purple)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4a5568;"></div>
+                <span>To Be Determined (Gray)</span>
+            </div>
+        </div>
+        
+        <!-- Edit Panel -->
+        <div class="overlay" id="overlay"></div>
+        <div class="edit-panel" id="edit-panel">
+            <h3>Edit District</h3>
+            <div class="form-group">
+                <label for="edit-name">District Name:</label>
+                <input type="text" id="edit-name" placeholder="e.g., Goldmark (5th)">
+            </div>
+            <div class="form-group">
+                <label for="edit-info">Description:</label>
+                <textarea id="edit-info" placeholder="Describe this district..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-status">Status:</label>
+                <input type="text" id="edit-status" placeholder="e.g., Active, Struggling, Dangerous">
+            </div>
+            <div class="form-group">
+                <label for="edit-type">District Type:</label>
+                <select id="edit-type">
+                    <option value="#4a5568">To Be Determined (Gray)</option>
+                    <option value="#d69e2e">Commercial/Active (Gold)</option>
+                    <option value="#2b6cb0">Working Class/Industrial (Blue)</option>
+                    <option value="#38a169">Residential/Productive (Green)</option>
+                    <option value="#805ad5">Religious/Administrative (Purple)</option>
+                    <option value="#c53030">Dangerous/Polluted (Red)</option>
+                    <option value="#553c9a">Wealthy/Elite (Dark Purple)</option>
+                    <option value="sealed">Sealed District (Red Pattern)</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="closeEditPanel()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDistrict()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+</body>
+</html>
