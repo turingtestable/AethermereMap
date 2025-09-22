@@ -7,6 +7,6 @@ load_dotenv(os.path.join(basedir, '.env'))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:////Users/jacobhilty/Sites/AethermereMap/aethermere.db'
+        'sqlite:////Users/jacobhilty/Sites/AethermereMap/instance/aethermere.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False

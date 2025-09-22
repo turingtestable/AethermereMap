@@ -8,8 +8,23 @@
 </head>
 <body>
     <div class="map-container">
-        <h1 class="map-title">The City of Aethermere</h1>
-        <p class="map-subtitle">Twenty years after The Weeping</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1 class="map-title" style="margin-bottom: 5px;">The City of Aethermere</h1>
+                <p class="map-subtitle" style="margin-bottom: 0;">Twenty years after The Weeping</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #a0aec0; font-size: 14px; margin-bottom: 5px;">
+                    Welcome, <strong style="color: #63b3ed;">{{ current_user.username }}</strong>
+                    <span style="background: #2d3748; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin-left: 5px;">
+                        {{ current_user.role.upper() }}
+                    </span>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" style="color: #f56565; text-decoration: none; font-size: 14px;">
+                    Logout
+                </a>
+            </div>
+        </div>
         
         <svg id="map-svg" viewBox="0 0 400 400">
             <!-- Gradients and Patterns -->
@@ -69,7 +84,9 @@
         <div class="info-panel">
             <div class="info-header">
                 <h3 id="district-name">Click a district to learn more</h3>
+                {% if current_user.can_edit_districts() %}
                 <button class="edit-btn" id="edit-btn" onclick="editCurrentDistrict()" style="display: none;">Edit</button>
+                {% endif %}
             </div>
             <p id="district-info">Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
             <p id="district-status"></p>
@@ -111,6 +128,7 @@
         </div>
         
         <!-- Edit Panel -->
+        {% if current_user.can_edit_districts() %}
         <div class="overlay" id="overlay"></div>
         <div class="edit-panel" id="edit-panel">
             <h3>Edit District</h3>
@@ -144,6 +162,7 @@
                 <button class="btn btn-primary" onclick="saveDistrict()">Save</button>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
