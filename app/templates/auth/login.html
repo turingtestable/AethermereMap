@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Aethermere City Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: #1a202c;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .login-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #63b3ed;
+            text-shadow: 0 0 10px rgba(99, 179, 237, 0.5);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #63b3ed;
+            box-shadow: 0 0 5px rgba(99, 179, 237, 0.3);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            accent-color: #63b3ed;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #63b3ed;
+            color: #1a202c;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .alert-error {
+            background: #742a2a;
+            color: #f56565;
+            border: 1px solid #f56565;
+        }
+        
+        .alert-info {
+            background: #2a4365;
+            color: #63b3ed;
+            border: 1px solid #63b3ed;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="login-title">Aethermere City Map</h1>
+        <p style="text-align: center; color: #a0aec0; margin-bottom: 30px; font-style: italic;">
+            Twenty years after The Weeping
+        </p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="remember_me" name="remember_me">
+                <label for="remember_me" style="margin-bottom: 0;">Remember me</label>
+            </div>
+            
+            <button type="submit" class="login-btn">Enter Aethermere</button>
+        </form>
+        
+        <div class="login-footer">
+            Contact your administrator for access
+        </div>
+    </div>
+</body>
+</html>
