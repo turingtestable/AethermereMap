@@ -4,14 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guild Management - Aethermere City Map</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon_aethermere.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        .guild-management {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
         .guild-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -222,16 +217,14 @@
     </style>
 </head>
 <body>
-    <div class="guild-management">
-        <div class="management-header">
-            <div>
-                <h1 class="map-title" style="margin-bottom: 5px;">Guild Management</h1>
-                <p class="map-subtitle" style="margin-bottom: 0;">The Five Great Guilds of Aethermere</p>
-            </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <a href="{{ url_for('main.index') }}" style="color: #63b3ed; text-decoration: none;">
-                    ← Back to Map
-                </a>
+    <div class="map-container">
+        {% set page_title = "Guild Management" %}
+        {% set page_subtitle = "The Great Guilds of Aethermere" %}
+        {% set current_page = "guilds" %}
+        {% include 'partials/navigation.html' %}
+
+        <div class="management-header" style="margin-top: 20px; padding-top: 0; border-top: none;">
+            <div style="display: flex; gap: 15px; align-items: center; justify-content: flex-end; width: 100%;">
                 {% if current_user.can_edit_districts() %}
                 <button class="add-guild-btn" onclick="openGuildModal()">Add New Guild</button>
                 {% endif %}

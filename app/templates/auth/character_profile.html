@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Character Profile - Aethermere City Map</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon_aethermere.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="map-container" style="max-width: 500px;">
-        <h1 class="map-title">Character Profile</h1>
-        <p class="map-subtitle">Manage your character information</p>
-        
-        <div class="info-panel">
+    <div class="map-container">
+        {% set page_title = "Character Profile" %}
+        {% set page_subtitle = "Manage your character information" %}
+        {% set current_page = "character_profile" %}
+        {% include 'partials/navigation.html' %}
+
+        <div class="info-panel" style="margin-top: 30px;">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -49,12 +52,6 @@
                     <button type="submit" class="btn btn-primary">Update Profile</button>
                 </div>
             </form>
-        </div>
-        
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="{{ url_for('main.index') }}" style="color: #63b3ed; text-decoration: none;">
-                ← Back to Map
-            </a>
         </div>
     </div>
 </body>

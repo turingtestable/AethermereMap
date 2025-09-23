@@ -146,10 +146,48 @@ body {
         gap: 15px;
     }
 
+    .title-content {
+        position: static;
+        transform: none;
+    }
+
     .title-user-menu {
         text-align: center;
         min-width: auto;
+        margin-left: 0;
     }
+}
+
+/* Additional responsive fix for narrow containers */
+@media (max-width: 600px) {
+    .title-section {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .title-content {
+        position: static;
+        transform: none;
+    }
+
+    .title-user-menu {
+        margin-left: 0;
+    }
+}
+
+/* Specific fix for containers with max-width constraints */
+.map-container[style*="max-width: 500px"] .title-section {
+    flex-direction: column;
+    gap: 15px;
+}
+
+.map-container[style*="max-width: 500px"] .title-content {
+    position: static;
+    transform: none;
+}
+
+.map-container[style*="max-width: 500px"] .title-user-menu {
+    margin-left: 0;
 }
 
 .map-title {

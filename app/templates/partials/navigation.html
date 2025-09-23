@@ -1,0 +1,82 @@
+<!-- Full-width Title with User Menu -->
+<div class="title-section">
+    <div class="title-content">
+        <h1 class="map-title" style="margin-bottom: 5px;">{{ page_title }}</h1>
+        <p class="map-subtitle" style="margin-bottom: 0;">{{ page_subtitle }}</p>
+    </div>
+    <div class="title-user-menu">
+        <div style="color: #a0aec0; font-size: 12px; margin-bottom: 6px;">
+            Welcome, <strong style="color: #63b3ed;">{{ current_user.display_name }}</strong>
+        </div>
+        <div style="margin-bottom: 10px;">
+            <span style="background: #1a202c; padding: 2px 6px; border-radius: 3px; font-size: 10px; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px;">
+                {{ current_user.role }}
+            </span>
+        </div>
+        <div class="user-menu">
+            <button class="user-menu-button" onclick="toggleUserMenu()" aria-label="Menu">
+            </button>
+            <div class="user-menu-dropdown">
+                <div class="user-menu-section">Navigation</div>
+                {% if current_page != 'map' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('main.index') }}">City Map</a>
+                </div>
+                {% endif %}
+                {% if current_page != 'guild_info' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('main.guild_info') }}">Guild Information</a>
+                </div>
+                {% endif %}
+
+                {% if current_user.can_edit_districts() %}
+                <div class="user-menu-section">Management</div>
+                {% if current_page != 'guilds' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('main.guilds') }}">Manage Guilds</a>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                {% if current_user.role == 'admin' %}
+                {% if current_page != 'manage_users' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('auth.manage_users') }}">Manage Users</a>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                <div class="user-menu-section">Account</div>
+                {% if current_user.role == 'player' and current_page != 'character_profile' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('auth.character_profile') }}">Character Profile</a>
+                </div>
+                {% endif %}
+                {% if current_page != 'change_password' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('auth.change_password') }}">Change Password</a>
+                </div>
+                {% endif %}
+                <div class="user-menu-item logout">
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// User menu dropdown functionality
+function toggleUserMenu() {
+    const menu = document.querySelector('.user-menu');
+    menu.classList.toggle('open');
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+    const menu = document.querySelector('.user-menu');
+    if (!menu.contains(e.target)) {
+        menu.classList.remove('open');
+    }
+});
+</script>

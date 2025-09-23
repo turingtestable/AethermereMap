@@ -4,22 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guild Information - Aethermere City Map</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon_aethermere.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        .guild-info-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .guild-info-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #4a5568;
-        }
         
         .guild-detail-card {
             background: #2d3748;
@@ -176,23 +163,11 @@
     </style>
 </head>
 <body>
-    <div class="guild-info-container">
-        <div class="guild-info-header">
-            <div>
-                <h1 class="map-title" style="margin-bottom: 5px;">Guild Information</h1>
-                <p class="map-subtitle" style="margin-bottom: 0;">The Five Great Guilds of Aethermere</p>
-            </div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <a href="{{ url_for('main.index') }}" style="color: #63b3ed; text-decoration: none;">
-                    ← Back to Map
-                </a>
-                {% if current_user.can_edit_districts() %}
-                <a href="{{ url_for('main.guilds') }}" style="color: #d69e2e; text-decoration: none;">
-                    Guild Management
-                </a>
-                {% endif %}
-            </div>
-        </div>
+    <div class="map-container">
+        {% set page_title = "Guild Information" %}
+        {% set page_subtitle = "The Great Guilds of Aethermere" %}
+        {% set current_page = "guild_info" %}
+        {% include 'partials/navigation.html' %}
         
         <div id="guilds-info-container">
             <!-- Guild detail cards will be loaded here -->

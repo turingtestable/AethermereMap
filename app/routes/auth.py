@@ -156,6 +156,10 @@ def change_password():
 @bp.route('/character-profile', methods=['GET', 'POST'])
 @login_required
 def character_profile():
+    if current_user.role != 'player':
+        flash('Access denied. Character profiles are only available to players.', 'error')
+        return redirect(url_for('main.index'))
+
     if request.method == 'POST':
         character_name = request.form['character_name'].strip()
         

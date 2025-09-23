@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - Aethermere Map</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon_aethermere.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .user-management {
@@ -122,10 +123,14 @@
     </style>
 </head>
 <body>
-    <div class="user-management">
-        <a href="{{ url_for('main.index') }}" class="nav-link">← Back to Map</a>
-        
-        <h1>User Management</h1>
+    <div class="map-container">
+        {% set page_title = "User Management" %}
+        {% set page_subtitle = "Manage application users" %}
+        {% set current_page = "manage_users" %}
+        {% include 'partials/navigation.html' %}
+
+        <div class="user-management" style="margin-top: 20px; max-width: none; background: transparent;">
+            <h1>User Management</h1>
         
         <div class="user-form">
             <h2>Add New User</h2>
@@ -195,6 +200,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
 
     <script>
