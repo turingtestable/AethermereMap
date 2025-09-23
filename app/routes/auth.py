@@ -152,3 +152,25 @@ def change_password():
         return redirect(url_for('main.index'))
     
     return render_template('auth/change_password.html')
+
+@bp.route('/character-profile', methods=['GET', 'POST'])
+@login_required
+def character_profile():
+    if request.method == 'POST':
+        character_name = request.form['character_name'].strip()
+        
+        # Allow empty character name (clears it)
+        if character_name == '':
+            current_user.character_name = None
+        else:
+            # Validate character name length
+            if len(character_name) > 100:
+                flash('Character name must be 100 characters or less.', 'error')
+                return render_template('auth/character_profile.html')
+            current_user.character_name = character_name
+        
+        db.session.commit()
+        flash('Character profile updated successfully!', 'success')
+        return redirect(url_for('main.index'))
+    
+    return render_template('auth/character_profile.html')

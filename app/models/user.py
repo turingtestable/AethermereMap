@@ -9,6 +9,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255))
     role = db.Column(db.String(20), nullable=False, default='player')  # 'admin', 'dm', 'player'
+    character_name = db.Column(db.String(100), nullable=True)  # Character name for display
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_password(self, password):
@@ -34,6 +35,13 @@ class User(UserMixin, db.Model):
     
     def can_invite_users(self):
         return self.role == 'admin'
+    
+    @property
+    def display_name(self):
+        """Return 'Username (Character Name)' format, or just username if no character name"""
+        if self.character_name:
+            return f"{self.username} ({self.character_name})"
+        return self.username
     
     def __repr__(self):
         return f'<User {self.username} ({self.role})>'

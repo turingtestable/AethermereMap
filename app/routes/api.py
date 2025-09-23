@@ -85,7 +85,7 @@ def get_notes(target_type, target_id):
         notes_data.append({
             'id': note.id,
             'user_id': note.user_id,
-            'username': note.user.username,
+            'username': note.user.display_name,
             'content': note.content,
             'created_at': note.created_at.isoformat(),
             'updated_at': note.updated_at.isoformat()

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Profile - Aethermere City Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="map-container" style="max-width: 500px;">
+        <h1 class="map-title">Character Profile</h1>
+        <p class="map-subtitle">Manage your character information</p>
+        
+        <div class="info-panel">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}" style="
+                            padding: 10px; 
+                            margin-bottom: 15px; 
+                            border-radius: 5px; 
+                            background: {{ '#2d3748' if category == 'error' else '#2d3748' }};
+                            border-left: 4px solid {{ '#f56565' if category == 'error' else '#38a169' }};
+                            color: {{ '#f56565' if category == 'error' else '#38a169' }};
+                        ">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="character_name">Character Name:</label>
+                    <input type="text" 
+                           id="character_name" 
+                           name="character_name" 
+                           placeholder="Enter your character's name (optional)"
+                           value="{{ current_user.character_name or '' }}"
+                           maxlength="100">
+                    <small style="color: #a0aec0; font-size: 12px; display: block; margin-top: 5px;">
+                        This will be displayed as "{{ current_user.username }} (Character Name)" throughout the app.
+                        Leave blank to show only your username.
+                    </small>
+                </div>
+                
+                <div class="button-group">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </div>
+            </form>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{{ url_for('main.index') }}" style="color: #63b3ed; text-decoration: none;">
+                ← Back to Map
+            </a>
+        </div>
+    </div>
+</body>
+</html>
