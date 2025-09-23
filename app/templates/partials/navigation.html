@@ -36,6 +36,11 @@
                     <a href="{{ url_for('main.guilds') }}">Manage Guilds</a>
                 </div>
                 {% endif %}
+                {% if current_page != 'admin_quick_references' %}
+                <div class="user-menu-item">
+                    <a href="{{ url_for('auth.admin_quick_references') }}">Player Quick Refs</a>
+                </div>
+                {% endif %}
                 {% endif %}
 
                 {% if current_user.role == 'admin' %}
@@ -47,9 +52,9 @@
                 {% endif %}
 
                 <div class="user-menu-section">Account</div>
-                {% if current_user.role == 'player' and current_page != 'character_profile' %}
+                {% if current_user.role == 'player' and current_page != 'quick_reference' %}
                 <div class="user-menu-item">
-                    <a href="{{ url_for('auth.character_profile') }}">Character Profile</a>
+                    <a href="{{ url_for('auth.quick_reference') }}">Quick Reference</a>
                 </div>
                 {% endif %}
                 {% if current_page != 'change_password' %}

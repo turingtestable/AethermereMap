@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Quick References - Aethermere City Map</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon_aethermere.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .quick-refs-container {
+            margin-top: 30px;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .player-card {
+            background: #2d3748;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #63b3ed;
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .player-name {
+            color: #63b3ed;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .character-name {
+            color: #a0aec0;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .edit-btn {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .edit-btn:hover {
+            background: #2c5aa0;
+        }
+
+        .stat-group {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            color: #a0aec0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .thresholds-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .threshold-item {
+            text-align: center;
+            background: #1a202c;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .threshold-label {
+            font-size: 10px;
+            color: #a0aec0;
+            text-transform: uppercase;
+        }
+
+        .threshold-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+
+        .experiences-list {
+            margin-top: 5px;
+        }
+
+        .experience-item {
+            background: #1a202c;
+            padding: 5px 8px;
+            border-radius: 3px;
+            margin-bottom: 3px;
+            font-size: 13px;
+        }
+
+        .no-data {
+            color: #718096;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a0aec0;
+            padding: 40px;
+            margin-top: 20px;
+        }
+
+        .quick-actions {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .print-btn {
+            background: #38a169;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .print-btn:hover {
+            background: #2f855a;
+        }
+
+        @media print {
+            .title-section,
+            .quick-actions,
+            .edit-btn {
+                display: none;
+            }
+
+            .players-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .player-card {
+                break-inside: avoid;
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #2d3748;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #63b3ed;
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: #4a5568;
+        }
+
+        .modal-form-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .modal-form-section:last-child {
+            border-bottom: none;
+        }
+
+        .modal-form-section h4 {
+            color: #63b3ed;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .modal-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .modal-form-group {
+            margin-bottom: 10px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            color: #e2e8f0;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        .modal-form-group input {
+            width: 100%;
+            padding: 8px;
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            color: #e2e8f0;
+            box-sizing: border-box;
+        }
+
+        .modal-form-group input:focus {
+            outline: none;
+            border-color: #63b3ed;
+        }
+
+        .modal-thresholds {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .modal-experiences {
+            margin-top: 10px;
+        }
+
+        .modal-experience-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .modal-experience-group input {
+            flex: 1;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #4a5568;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-btn-primary {
+            background: #3182ce;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background: #2c5aa0;
+        }
+
+        .modal-btn-secondary {
+            background: #4a5568;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        @media (max-width: 768px) {
+            .players-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .thresholds-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                max-height: 85%;
+            }
+
+            .modal-form-row,
+            .modal-thresholds {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        {% set page_title = "Player Quick References" %}
+        {% set page_subtitle = "Daggerheart character stats overview" %}
+        {% set current_page = "admin_quick_references" %}
+        {% include 'partials/navigation.html' %}
+
+        <div class="quick-refs-container">
+            <div class="quick-actions">
+                <h2 style="margin: 0; color: #e2e8f0;">All Player Quick References</h2>
+                <button class="print-btn" onclick="window.print()">Print Reference Sheet</button>
+            </div>
+
+            {% if players %}
+                <div class="players-grid">
+                    {% for player in players %}
+                    <div class="player-card" id="player-card-{{ player.id }}">
+                        <div class="player-header">
+                            <div>
+                                <div class="player-name">{{ player.username }}</div>
+                                {% if player.character_name %}
+                                    <div class="character-name">"{{ player.character_name }}"</div>
+                                {% endif %}
+                            </div>
+                            <button class="edit-btn" onclick="editPlayer({{ player.id }})">Edit</button>
+                        </div>
+
+                        {% set quick_ref = player.character_quick_ref %}
+                        {% if quick_ref %}
+                            <div class="stat-row">
+                                <div class="stat-group">
+                                    <div class="stat-label">Evasion</div>
+                                    <div class="stat-value">{{ quick_ref.evasion_score or 'Not Set' }}</div>
+                                </div>
+                                <div class="stat-group">
+                                    <div class="stat-label">Class</div>
+                                    <div class="stat-value">{{ quick_ref.class_name or 'Not Set' }}</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-group">
+                                <div class="stat-label">Specialization</div>
+                                <div class="stat-value">{{ quick_ref.specialization or 'Not Set' }}</div>
+                            </div>
+
+                            <div class="stat-group">
+                                <div class="stat-label">Damage Thresholds</div>
+                                {% set thresholds = quick_ref.get_damage_thresholds() %}
+                                <div class="thresholds-grid">
+                                    <div class="threshold-item">
+                                        <div class="threshold-label">Minor</div>
+                                        <div class="threshold-value">{{ thresholds.minor or '-' }}</div>
+                                    </div>
+                                    <div class="threshold-item">
+                                        <div class="threshold-label">Major</div>
+                                        <div class="threshold-value">{{ thresholds.major or '-' }}</div>
+                                    </div>
+                                    <div class="threshold-item">
+                                        <div class="threshold-label">Severe</div>
+                                        <div class="threshold-value">{{ thresholds.severe or '-' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-group">
+                                <div class="stat-label">Experiences</div>
+                                {% set experiences = quick_ref.get_experiences() %}
+                                {% if experiences and experiences|reject('equalto', '')|list %}
+                                    <div class="experiences-list">
+                                        {% for exp in experiences %}
+                                            {% if exp %}
+                                                <div class="experience-item">{{ exp }}</div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="no-data">No experiences set</div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="no-data">No quick reference data available</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>No Players Found</h3>
+                    <p>There are no players in the system yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Player Quick Reference</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="editForm">
+                <div class="modal-form-section">
+                    <h4>Character Info</h4>
+                    <div class="modal-form-group">
+                        <label for="modal_character_name">Character Name:</label>
+                        <input type="text" id="modal_character_name" name="character_name" maxlength="100">
+                    </div>
+                    <div class="modal-form-row">
+                        <div class="modal-form-group">
+                            <label for="modal_class_name">Class:</label>
+                            <input type="text" id="modal_class_name" name="class_name" placeholder="e.g., Guardian, Seraph, Warrior">
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="modal_specialization">Specialization:</label>
+                            <input type="text" id="modal_specialization" name="specialization">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-form-section">
+                    <h4>Combat Stats</h4>
+                    <div class="modal-form-group">
+                        <label for="modal_evasion_score">Evasion Score:</label>
+                        <input type="number" id="modal_evasion_score" name="evasion_score" min="0" max="50">
+                    </div>
+                </div>
+
+                <div class="modal-form-section">
+                    <h4>Damage Thresholds</h4>
+                    <div class="modal-thresholds">
+                        <div class="modal-form-group">
+                            <label for="modal_minor_threshold">Minor:</label>
+                            <input type="number" id="modal_minor_threshold" name="minor_threshold" min="0" max="50">
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="modal_major_threshold">Major:</label>
+                            <input type="number" id="modal_major_threshold" name="major_threshold" min="0" max="50">
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="modal_severe_threshold">Severe:</label>
+                            <input type="number" id="modal_severe_threshold" name="severe_threshold" min="0" max="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-form-section">
+                    <h4>Experiences</h4>
+                    <div class="modal-experiences" id="modalExperiences">
+                        <!-- Experience fields will be populated here -->
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="modal-btn modal-btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentEditingUserId = null;
+
+        function editPlayer(playerId) {
+            currentEditingUserId = playerId;
+
+            // Get player data from the card
+            const playerCard = document.getElementById(`player-card-${playerId}`);
+            const playerName = playerCard.querySelector('.player-name').textContent;
+            const characterName = playerCard.querySelector('.character-name')?.textContent?.replace(/"/g, '') || '';
+
+            // Set modal title
+            document.getElementById('modalTitle').textContent = `Edit ${playerName}'s Quick Reference`;
+
+            // Get existing data from the card or set defaults
+            const classValue = getStatValue(playerCard, 'Class');
+            const specializationValue = getStatValue(playerCard, 'Specialization');
+            const evasionValue = getStatValue(playerCard, 'Evasion');
+
+            // Populate form fields
+            document.getElementById('modal_character_name').value = characterName;
+            document.getElementById('modal_class_name').value = classValue;
+            document.getElementById('modal_specialization').value = specializationValue;
+            document.getElementById('modal_evasion_score').value = evasionValue === 'Not Set' ? '' : evasionValue;
+
+            // Get threshold values
+            const thresholds = playerCard.querySelectorAll('.threshold-value');
+            document.getElementById('modal_minor_threshold').value = thresholds[0]?.textContent === '-' ? '' : thresholds[0]?.textContent || '';
+            document.getElementById('modal_major_threshold').value = thresholds[1]?.textContent === '-' ? '' : thresholds[1]?.textContent || '';
+            document.getElementById('modal_severe_threshold').value = thresholds[2]?.textContent === '-' ? '' : thresholds[2]?.textContent || '';
+
+            // Populate experiences
+            const experiencesContainer = document.getElementById('modalExperiences');
+            const experienceItems = playerCard.querySelectorAll('.experience-item');
+
+            experiencesContainer.innerHTML = '';
+
+            // Always show at least 2 experience fields
+            const experienceCount = Math.max(2, experienceItems.length);
+
+            for (let i = 0; i < experienceCount; i++) {
+                const experienceGroup = document.createElement('div');
+                experienceGroup.className = 'modal-experience-group';
+
+                const experienceValue = i < experienceItems.length ? experienceItems[i].textContent : '';
+
+                experienceGroup.innerHTML = `
+                    <label style="min-width: 80px; color: #e2e8f0; font-size: 14px;">Experience ${i + 1}:</label>
+                    <input type="text" name="experience_${i + 1}" value="${experienceValue}" placeholder="e.g., Academic, Sage, Noble">
+                `;
+
+                experiencesContainer.appendChild(experienceGroup);
+            }
+
+            // Show modal
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function getStatValue(playerCard, statLabel) {
+            const statGroups = playerCard.querySelectorAll('.stat-group');
+            for (const group of statGroups) {
+                const label = group.querySelector('.stat-label');
+                if (label && label.textContent.trim() === statLabel) {
+                    return group.querySelector('.stat-value').textContent.trim();
+                }
+            }
+            return '';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditingUserId = null;
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!currentEditingUserId) return;
+
+            // Collect form data
+            const formData = new FormData(e.target);
+            const data = {
+                character_name: formData.get('character_name') || null,
+                class_name: formData.get('class_name') || null,
+                specialization: formData.get('specialization') || null,
+                evasion_score: formData.get('evasion_score') ? parseInt(formData.get('evasion_score')) : null,
+                damage_thresholds: {
+                    minor: formData.get('minor_threshold') ? parseInt(formData.get('minor_threshold')) : null,
+                    major: formData.get('major_threshold') ? parseInt(formData.get('major_threshold')) : null,
+                    severe: formData.get('severe_threshold') ? parseInt(formData.get('severe_threshold')) : null
+                },
+                experiences: []
+            };
+
+            // Collect experiences
+            for (let i = 1; i <= 4; i++) {
+                const exp = formData.get(`experience_${i}`);
+                if (exp && exp.trim()) {
+                    data.experiences.push(exp.trim());
+                }
+            }
+
+            try {
+                const response = await fetch(`/auth/admin/quick-references/${currentEditingUserId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    closeModal();
+                    // Reload the page to show updated data
+                    location.reload();
+                } else {
+                    alert('Error updating quick reference: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error updating quick reference:', error);
+                alert('Error updating quick reference. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
