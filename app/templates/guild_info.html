@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guild Information - Aethermere City Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .guild-info-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .guild-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4a5568;
+        }
+        
+        .guild-detail-card {
+            background: #2d3748;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #63b3ed;
+        }
+        
+        .guild-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .guild-detail-name {
+            color: #63b3ed;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .guild-status-badges {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .guild-status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-active { background: #38a169; color: white; }
+        .status-struggling { background: #d69e2e; color: white; }
+        .status-underground { background: #805ad5; color: white; }
+        .status-disbanded { background: #e53e3e; color: white; }
+        
+        .influence-high { background: #c53030; color: white; }
+        .influence-medium { background: #d69e2e; color: white; }
+        .influence-low { background: #4a5568; color: white; }
+        
+        .guild-leadership {
+            background: #1a202c;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 3px solid #d69e2e;
+        }
+        
+        .guild-leadership-label {
+            color: #d69e2e;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .guild-leadership-text {
+            color: #e2e8f0;
+            line-height: 1.4;
+        }
+        
+        .guild-description {
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+        
+        .guild-headquarters {
+            background: #1a202c;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        
+        .guild-headquarters-label {
+            color: #63b3ed;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .guild-relationships {
+            margin-top: 20px;
+        }
+        
+        .relationships-title {
+            color: #63b3ed;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 5px;
+        }
+        
+        .relationship-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: #1a202c;
+        }
+        
+        .relationship-item.positive {
+            border-left: 3px solid #38a169;
+        }
+        
+        .relationship-item.negative {
+            border-left: 3px solid #e53e3e;
+        }
+        
+        .relationship-type-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .positive-badge { background: #38a169; color: white; }
+        .negative-badge { background: #e53e3e; color: white; }
+        
+        .relationship-content {
+            flex: 1;
+        }
+        
+        .relationship-guild-name {
+            color: #63b3ed;
+            font-weight: bold;
+        }
+        
+        .relationship-description {
+            color: #a0aec0;
+            font-size: 12px;
+            margin-top: 3px;
+            line-height: 1.3;
+        }
+        
+        .no-relationships {
+            color: #a0aec0;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .player-notes-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="guild-info-container">
+        <div class="guild-info-header">
+            <div>
+                <h1 class="map-title" style="margin-bottom: 5px;">Guild Information</h1>
+                <p class="map-subtitle" style="margin-bottom: 0;">The Five Great Guilds of Aethermere</p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <a href="{{ url_for('main.index') }}" style="color: #63b3ed; text-decoration: none;">
+                    ← Back to Map
+                </a>
+                {% if current_user.can_edit_districts() %}
+                <a href="{{ url_for('main.guilds') }}" style="color: #d69e2e; text-decoration: none;">
+                    Guild Management
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div id="guilds-info-container">
+            <!-- Guild detail cards will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Pass current user info to JavaScript
+        const currentUserId = {{ current_user.id }};
+        const currentUserRole = '{{ current_user.role }}';
+        
+        // Load guild information
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGuildInformation();
+        });
+        
+        // Load and display detailed guild information
+        async function loadGuildInformation() {
+            try {
+                // Load guilds with basic information
+                const guildsResponse = await fetch('/api/guilds', {
+                    credentials: 'same-origin'
+                });
+                
+                if (!guildsResponse.ok) {
+                    throw new Error(`HTTP ${guildsResponse.status}: ${guildsResponse.statusText}`);
+                }
+                
+                const guilds = await guildsResponse.json();
+                
+                // Fetch detailed information for each guild (including relationships)
+                const detailedGuilds = await Promise.all(
+                    guilds.map(async (guild) => {
+                        const detailResponse = await fetch(`/api/guilds/${guild.id}`, {
+                            credentials: 'same-origin'
+                        });
+                        
+                        if (!detailResponse.ok) {
+                            throw new Error(`HTTP ${detailResponse.status}: ${detailResponse.statusText}`);
+                        }
+                        
+                        return await detailResponse.json();
+                    })
+                );
+                
+                const container = document.getElementById('guilds-info-container');
+                container.innerHTML = '';
+                
+                detailedGuilds.forEach(guild => {
+                    const guildCard = createGuildDetailCard(guild);
+                    container.appendChild(guildCard);
+                    // Load player notes after the card is in the DOM
+                    loadGuildPlayerNotes(guild.id);
+                });
+                
+                // Scroll to specific guild if anchor is in URL
+                scrollToGuildFromAnchor();
+            } catch (error) {
+                console.error('Error loading guild information:', error);
+                document.getElementById('guilds-info-container').innerHTML = 
+                    `<div style="color: #e53e3e; text-align: center; padding: 20px;">
+                        <p>Error loading guild information: ${error.message}</p>
+                        <p style="font-size: 12px; color: #a0aec0;">Check the browser console for more details.</p>
+                        <button onclick="loadGuildInformation()" style="margin-top: 10px; padding: 5px 10px; background: #63b3ed; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>`;
+            }
+        }
+        
+        // Create a detailed guild card
+        function createGuildDetailCard(guild) {
+            const card = document.createElement('div');
+            card.className = 'guild-detail-card';
+            card.id = `guild-info-${guild.id}`;
+            
+            const statusClass = `status-${guild.status.toLowerCase()}`;
+            const influenceClass = `influence-${guild.influence.toLowerCase()}`;
+            
+            // Create relationships HTML
+            let relationshipsHtml = '';
+            if (guild.relationships && guild.relationships.length > 0) {
+                const relationshipsList = guild.relationships.map(rel => {
+                    const typeClass = rel.relationship_type;
+                    const badgeClass = rel.relationship_type === 'positive' ? 'positive-badge' : 'negative-badge';
+                    const typeLabel = rel.relationship_type === 'positive' ? 'Allied' : 'Conflict';
+                    
+                    return `
+                        <div class="relationship-item ${typeClass}">
+                            <span class="relationship-type-badge ${badgeClass}">${typeLabel}</span>
+                            <div class="relationship-content">
+                                <div class="relationship-guild-name">${rel.other_guild_name}</div>
+                                ${rel.description ? `<div class="relationship-description">${rel.description}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                relationshipsHtml = `
+                    <div class="guild-relationships">
+                        <div class="relationships-title">Guild Relationships</div>
+                        ${relationshipsList}
+                    </div>
+                `;
+            } else {
+                relationshipsHtml = `
+                    <div class="guild-relationships">
+                        <div class="relationships-title">Guild Relationships</div>
+                        <div class="no-relationships">No known relationships with other guilds</div>
+                    </div>
+                `;
+            }
+            
+            // Create headquarters HTML
+            let headquartersHtml = '';
+            if (guild.headquarters_name) {
+                headquartersHtml = `
+                    <div class="guild-headquarters">
+                        <div class="guild-headquarters-label">Headquarters</div>
+                        <div>${guild.headquarters_name}</div>
+                    </div>
+                `;
+            }
+            
+            card.innerHTML = `
+                <div class="guild-detail-header">
+                    <h2 class="guild-detail-name">${guild.name}</h2>
+                    <div class="guild-status-badges">
+                        <span class="guild-status-badge ${statusClass}">${guild.status}</span>
+                        <span class="guild-status-badge ${influenceClass}">${guild.influence} Influence</span>
+                    </div>
+                </div>
+                
+                <div class="guild-leadership">
+                    <div class="guild-leadership-label">Leadership</div>
+                    <div class="guild-leadership-text">${guild.leadership || 'Leadership structure unknown'}</div>
+                </div>
+                
+                ${headquartersHtml}
+                
+                <div class="guild-description">
+                    ${guild.description || 'No detailed information available about this guild.'}
+                </div>
+                
+                ${relationshipsHtml}
+                
+                <div class="player-notes-section">
+                    <div class="section-label">Player Notes</div>
+                    <div id="player-notes-${guild.id}">
+                        <!-- Player notes will be loaded here -->
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Load and display player notes for a guild
+        async function loadGuildPlayerNotes(guildId) {
+            try {
+                const response = await fetch(`/api/notes/guild/${guildId}`, {
+                    credentials: 'same-origin'
+                });
+                const notes = await response.json();
+                
+                const notesContainer = document.getElementById(`player-notes-${guildId}`);
+                
+                let currentUserHasNote = false;
+                
+                if (notes.length === 0) {
+                    notesContainer.innerHTML = '<p style="color: #a0aec0; font-style: italic;">No player notes yet.</p>';
+                } else {
+                    let notesHtml = '';
+                    notes.forEach(note => {
+                        // Check if current user already has a note
+                        if (note.user_id === currentUserId) {
+                            currentUserHasNote = true;
+                        }
+                        
+                        let noteActions = '';
+                        // Only show edit/delete for the note owner or admin
+                        if (note.user_id === currentUserId || currentUserRole === 'admin') {
+                            noteActions = `
+                                <div class="note-actions">
+                                    <button class="btn btn-small" onclick="editGuildPlayerNote(${guildId}, ${note.id}, '${note.content.replace(/'/g, "\\\\'")}')">Edit</button>
+                                    <button class="btn btn-small btn-danger" onclick="deleteGuildPlayerNote(${guildId}, ${note.id})">Delete</button>
+                                </div>
+                            `;
+                        }
+                        
+                        notesHtml += `
+                            <div class="player-note" data-note-id="${note.id}">
+                                <strong>${note.username}:</strong>
+                                <div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>
+                                ${noteActions}
+                            </div>
+                        `;
+                    });
+                    notesContainer.innerHTML = notesHtml;
+                }
+                
+                // Show/hide the add note section based on user role and existing notes
+                let addNoteHtml = '';
+                
+                // Check if we're currently editing a note
+                const isEditingNote = notesContainer.querySelector('.note-actions button[onclick*="updateGuildPlayerNote"]') !== null;
+                
+                // Only players can add notes (DMs/admins edit guilds directly)
+                if (currentUserRole === 'player' && (!currentUserHasNote || isEditingNote)) {
+                    addNoteHtml = `
+                        <div class="add-note-section" id="add-guild-note-${guildId}">
+                            <textarea id="new-guild-note-content-${guildId}" placeholder="Add your note about this guild..." rows="3"></textarea>
+                            <div class="note-actions">
+                                <button class="btn btn-small" onclick="saveGuildPlayerNote(${guildId})">Add Note</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                notesContainer.innerHTML += addNoteHtml;
+                
+            } catch (error) {
+                console.error('Error loading guild player notes:', error);
+                const notesContainer = document.getElementById(`player-notes-${guildId}`);
+                notesContainer.innerHTML = '<p style="color: #e53e3e;">Error loading notes.</p>';
+            }
+        }
+        
+        // Function to scroll to a specific guild based on URL anchor
+        function scrollToGuildFromAnchor() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#guild-info-')) {
+                const guildElement = document.querySelector(hash);
+                if (guildElement) {
+                    // Add a brief delay to ensure all rendering is complete
+                    setTimeout(() => {
+                        guildElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                        
+                        // Add a highlight effect to make it obvious which guild was targeted
+                        guildElement.style.boxShadow = '0 0 20px rgba(99, 179, 237, 0.5)';
+                        guildElement.style.transform = 'scale(1.02)';
+                        guildElement.style.transition = 'all 0.3s ease';
+                        
+                        // Remove highlight after 2 seconds
+                        setTimeout(() => {
+                            guildElement.style.boxShadow = '';
+                            guildElement.style.transform = '';
+                        }, 2000);
+                    }, 100);
+                }
+            }
+        }
+        
+        // Function to save a new guild player note
+        async function saveGuildPlayerNote(guildId) {
+            const content = document.getElementById(`new-guild-note-content-${guildId}`).value.trim();
+            if (!content) return;
+            
+            try {
+                const response = await fetch('/api/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        target_type: 'guild',
+                        target_id: guildId,
+                        content: content
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById(`new-guild-note-content-${guildId}`).value = '';
+                    loadGuildPlayerNotes(guildId);
+                } else {
+                    alert('Error saving note: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error saving guild note:', error);
+                alert('Error saving note. Please try again.');
+            }
+        }
+        
+        // Function to edit a guild player note
+        function editGuildPlayerNote(guildId, noteId, currentContent) {
+            const textarea = document.getElementById(`new-guild-note-content-${guildId}`);
+            if (textarea) {
+                textarea.value = currentContent;
+                
+                // Force the add note section to be visible during edit
+                const addNoteSection = document.getElementById(`add-guild-note-${guildId}`);
+                if (addNoteSection) addNoteSection.style.display = 'block';
+                
+                // Replace the Add Note button with Update/Cancel buttons
+                const actionsDiv = addNoteSection.querySelector('.note-actions');
+                actionsDiv.innerHTML = `
+                    <button class="btn btn-small" onclick="updateGuildPlayerNote(${guildId}, ${noteId})">Update Note</button>
+                    <button class="btn btn-small btn-secondary" onclick="cancelEditGuildNote(${guildId})">Cancel</button>
+                `;
+            }
+        }
+        
+        // Function to update a guild player note
+        async function updateGuildPlayerNote(guildId, noteId) {
+            const content = document.getElementById(`new-guild-note-content-${guildId}`).value.trim();
+            if (!content) return;
+            
+            try {
+                const response = await fetch(`/api/notes/${noteId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        content: content
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    cancelEditGuildNote(guildId);
+                    loadGuildPlayerNotes(guildId);
+                } else {
+                    alert('Error updating note: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error updating guild note:', error);
+                alert('Error updating note. Please try again.');
+            }
+        }
+        
+        // Function to delete a guild player note
+        async function deleteGuildPlayerNote(guildId, noteId) {
+            if (!confirm('Are you sure you want to delete this note?')) return;
+            
+            try {
+                const response = await fetch(`/api/notes/${noteId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    loadGuildPlayerNotes(guildId);
+                } else {
+                    const result = await response.json();
+                    alert('Error deleting note: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error deleting guild note:', error);
+                alert('Error deleting note. Please try again.');
+            }
+        }
+        
+        // Function to cancel editing a guild note
+        function cancelEditGuildNote(guildId) {
+            document.getElementById(`new-guild-note-content-${guildId}`).value = '';
+            const addNoteSection = document.getElementById(`add-guild-note-${guildId}`);
+            if (addNoteSection) {
+                const actionsDiv = addNoteSection.querySelector('.note-actions');
+                actionsDiv.innerHTML = `<button class="btn btn-small" onclick="saveGuildPlayerNote(${guildId})">Add Note</button>`;
+            }
+            
+            // Hide the add note section if user already has a note
+            loadGuildPlayerNotes(guildId);
+        }
+        
+        // Update the viewGuildDetails function in map.js to redirect here
+        function viewGuildDetails(guildId) {
+            window.location.href = `/guild-info#guild-info-${guildId}`;
+        }
+    </script>
+</body>
+</html>

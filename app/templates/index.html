@@ -26,6 +26,14 @@
                         Manage Users
                     </a>
                     {% endif %}
+                    <a href="{{ url_for('main.guild_info') }}" style="color: #63b3ed; text-decoration: none; margin-right: 15px;">
+                        Guild Information
+                    </a>
+                    {% if current_user.can_edit_districts() %}
+                    <a href="{{ url_for('main.guilds') }}" style="color: #63b3ed; text-decoration: none; margin-right: 15px;">
+                        Manage Guilds
+                    </a>
+                    {% endif %}
                     <a href="{{ url_for('auth.change_password') }}" style="color: #63b3ed; text-decoration: none; margin-right: 15px;">
                         Change Password
                     </a>
@@ -123,6 +131,13 @@
                 <div class="info-section">
                     <h4 class="section-label">Status</h4>
                     <p id="district-status"></p>
+                </div>
+                
+                <div class="info-section" id="guilds-section" style="display: none;">
+                    <h4 class="section-label">Guilds Present</h4>
+                    <div id="guilds-list">
+                        <!-- Guild preview cards will be populated here -->
+                    </div>
                 </div>
                 
                 <div class="info-section">

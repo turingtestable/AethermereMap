@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Function to show district details with new layout
-function showDistrictDetails(name, info, status, color, districtId) {
+async function showDistrictDetails(name, info, status, color, districtId) {
     // Update district info
     document.getElementById('district-name').textContent = name;
     const infoElement = document.getElementById('district-info');
@@ -77,6 +77,9 @@ function showDistrictDetails(name, info, status, color, districtId) {
     document.getElementById('default-content').style.display = 'none';
     document.getElementById('district-details').style.display = 'block';
     
+    // Load and display guilds for this district
+    await loadDistrictGuilds(districtId);
+    
     // Load player notes
     loadPlayerNotes('district', districtId);
 }
@@ -85,6 +88,7 @@ function showDistrictDetails(name, info, status, color, districtId) {
 function hideDistrictDetails() {
     document.getElementById('default-content').style.display = 'block';
     document.getElementById('district-details').style.display = 'none';
+    document.getElementById('guilds-section').style.display = 'none';
 }
 
 // Function to load player notes for a target
@@ -381,4 +385,78 @@ function saveDistrict() {
         console.error('Error updating district:', error);
         alert('Failed to update district. Please try again.');
     });
+}
+
+// Function to load and display guilds for a district
+async function loadDistrictGuilds(districtId) {
+    try {
+        const response = await fetch(`/api/districts/${districtId}`, {
+            credentials: 'same-origin'
+        });
+        const districtData = await response.json();
+        
+        const guildsSection = document.getElementById('guilds-section');
+        const guildsList = document.getElementById('guilds-list');
+        
+        if (districtData.guilds && districtData.guilds.length > 0) {
+            // Show guilds section and populate with guild preview cards
+            guildsSection.style.display = 'block';
+            guildsList.innerHTML = '';
+            
+            districtData.guilds.forEach(guild => {
+                const guildCard = createGuildPreviewCard(guild, districtData.color);
+                guildsList.appendChild(guildCard);
+            });
+        } else {
+            // Hide guilds section if no guilds
+            guildsSection.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading district guilds:', error);
+        document.getElementById('guilds-section').style.display = 'none';
+    }
+}
+
+// Function to create a guild preview card
+function createGuildPreviewCard(guild, districtColor) {
+    const card = document.createElement('div');
+    card.className = 'guild-preview-card';
+    
+    // Add visual indicator for relationship to district
+    let relationshipIndicator = '';
+    
+    if (guild.relationship_to_district === 'headquartered') {
+        const indicatorColor = districtColor === 'sealed' ? '#f56565' : districtColor;
+        relationshipIndicator = `<span class="guild-hq-indicator" title="Headquartered in this district" style="color: ${indicatorColor}">🏛️</span>`;
+        // Set border color to match the district color
+        card.style.borderLeftColor = indicatorColor;
+    } else if (guild.relationship_to_district === 'citywide') {
+        relationshipIndicator = '<span class="guild-citywide-indicator" title="Operates city-wide">🌐</span>';
+        // Use silver/gray for city-wide guilds (not used in district colors)
+        card.style.borderLeftColor = '#a0aec0';
+    }
+    
+    card.innerHTML = `
+        <div class="guild-preview-header">
+            <h5 class="guild-preview-name">
+                ${relationshipIndicator}
+                ${guild.name}
+            </h5>
+        </div>
+        
+        <div class="guild-preview-description">
+            ${guild.description || 'No description available.'}
+        </div>
+        
+        <a href="#" class="guild-preview-link" onclick="viewGuildDetails(${guild.id}); return false;">
+            View Full Details →
+        </a>
+    `;
+    
+    return card;
+}
+
+// Function for viewing guild details - redirects to guild info page
+function viewGuildDetails(guildId) {
+    window.location.href = `/guild-info#guild-info-${guildId}`;
 }
