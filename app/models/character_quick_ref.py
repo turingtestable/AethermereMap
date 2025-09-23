@@ -17,7 +17,7 @@ class CharacterQuickRef(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationship back to user
-    user = db.relationship('User', backref=db.backref('character_quick_ref', uselist=False))
+    user = db.relationship('User', backref=db.backref('character_quick_ref', uselist=False, cascade='all, delete-orphan'))
 
     def __repr__(self):
         return f'<CharacterQuickRef {self.user.username}>'

@@ -1,11 +1,19 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User, CharacterQuickRef
-from app import db
+from app import db, limiter
+from flask_limiter.errors import RateLimitExceeded
 
 bp = Blueprint('auth', __name__)
 
+@bp.errorhandler(RateLimitExceeded)
+def rate_limit_exceeded(e):
+    flash('Too many login attempts. Please wait a minute before trying again.', 'error')
+    return render_template('auth/login.html'), 429
+
 @bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")  # IP-based rate limiting
+@limiter.limit("5 per minute", key_func=lambda: request.form.get('username', ''))  # Username-based rate limiting
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
@@ -16,13 +24,16 @@ def login():
         remember_me = bool(request.form.get('remember_me'))
         
         user = User.query.filter_by(username=username).first()
-        
+
         if user and user.check_password(password):
-            login_user(user, remember=remember_me)
-            next_page = request.args.get('next')
-            if not next_page:
-                next_page = url_for('main.index')
-            return redirect(next_page)
+            if user.is_deleted():
+                flash('This account has been deactivated', 'error')
+            else:
+                login_user(user, remember=remember_me)
+                next_page = request.args.get('next')
+                if not next_page:
+                    next_page = url_for('main.index')
+                return redirect(next_page)
         else:
             flash('Invalid username or password', 'error')
     
@@ -42,11 +53,12 @@ def manage_users():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('main.index'))
     
-    users = User.query.order_by(User.username).all()
+    users = User.get_active_users().order_by(User.username).all()
     return render_template('auth/manage_users.html', users=users)
 
 @bp.route('/admin/users/create', methods=['POST'])
 @login_required
+@limiter.limit("20 per hour")  # Limit user creation
 def create_user():
     if current_user.role != 'admin':
         return jsonify({'error': 'Access denied'}), 403
@@ -91,11 +103,12 @@ def delete_user(user_id):
         return jsonify({'error': 'Access denied'}), 403
     
     user = User.query.get_or_404(user_id)
-    
+
     if user.id == current_user.id:
         return jsonify({'error': 'Cannot delete your own account'}), 400
-    
-    db.session.delete(user)
+
+    # Soft delete the user instead of hard delete
+    user.soft_delete()
     db.session.commit()
     
     return jsonify({'message': 'User deleted successfully'})
@@ -252,8 +265,8 @@ def admin_quick_references():
         flash('Access denied. Admin or DM privileges required.', 'error')
         return redirect(url_for('main.index'))
 
-    # Get all players with their quick references
-    players = User.query.filter_by(role='player').all()
+    # Get all active players with their quick references
+    players = User.get_active_players().all()
 
     return render_template('auth/admin_quick_references.html', players=players)
 

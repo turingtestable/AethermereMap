@@ -16,3 +16,7 @@ class Config:
         'sqlite:///' + os.path.join(basedir, '..', 'instance', 'aethermere.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
+
+    # Rate limiting configuration
+    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL') or 'memory://'
+    RATELIMIT_DEFAULT = "1000 per hour"

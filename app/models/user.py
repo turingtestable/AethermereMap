@@ -11,12 +11,31 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default='player')  # 'admin', 'dm', 'player'
     character_name = db.Column(db.String(100), nullable=True)  # Character name for display
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, nullable=True)  # Soft delete timestamp
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def soft_delete(self):
+        """Mark user as deleted"""
+        self.deleted_at = datetime.utcnow()
+
+    def is_deleted(self):
+        """Check if user is soft deleted"""
+        return self.deleted_at is not None
+
+    @classmethod
+    def get_active_users(cls):
+        """Get all non-deleted users"""
+        return cls.query.filter(cls.deleted_at.is_(None))
+
+    @classmethod
+    def get_active_players(cls):
+        """Get all non-deleted players"""
+        return cls.query.filter(cls.deleted_at.is_(None), cls.role == 'player')
     
     @property
     def is_admin(self):
