@@ -8,57 +8,116 @@
 </head>
 <body>
     <div class="map-container">
-        <!-- Centered Title -->
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h1 class="map-title" style="margin-bottom: 5px;">The City of Aethermere</h1>
-            <p class="map-subtitle" style="margin-bottom: 0;">Twenty years after The Weeping</p>
-        </div>
-        
-        <!-- User Info and Menu (Top Right) -->
-        <div style="position: absolute; top: 20px; right: 20px; text-align: center;">
-            <div style="color: #a0aec0; font-size: 13px; margin-bottom: 8px;">
-                Welcome, <strong style="color: #63b3ed;">{{ current_user.display_name }}</strong>
+        <!-- Full-width Title with User Menu -->
+        <div class="title-section">
+            <div class="title-content">
+                <h1 class="map-title" style="margin-bottom: 5px;">The City of Aethermere</h1>
+                <p class="map-subtitle" style="margin-bottom: 0;">Twenty years after The Weeping</p>
             </div>
-            <div style="margin-bottom: 8px;">
-                <span style="background: #2d3748; padding: 3px 8px; border-radius: 4px; font-size: 11px; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px;">
-                    {{ current_user.role }}
-                </span>
-            </div>
-            <div class="user-menu">
-                <button class="user-menu-button" onclick="toggleUserMenu()" aria-label="Menu">
-                </button>
-                <div class="user-menu-dropdown">
-                    <div class="user-menu-section">Navigation</div>
-                    <div class="user-menu-item">
-                        <a href="{{ url_for('main.guild_info') }}">Guild Information</a>
-                    </div>
-                    
-                    {% if current_user.can_edit_districts() %}
-                    <div class="user-menu-section">Management</div>
-                    <div class="user-menu-item">
-                        <a href="{{ url_for('main.guilds') }}">Manage Guilds</a>
-                    </div>
-                    {% endif %}
-                    
-                    {% if current_user.role == 'admin' %}
-                    <div class="user-menu-item">
-                        <a href="{{ url_for('auth.manage_users') }}">Manage Users</a>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="user-menu-section">Account</div>
-                    <div class="user-menu-item">
-                        <a href="{{ url_for('auth.character_profile') }}">Character Profile</a>
-                    </div>
-                    <div class="user-menu-item">
-                        <a href="{{ url_for('auth.change_password') }}">Change Password</a>
-                    </div>
-                    <div class="user-menu-item logout">
-                        <a href="{{ url_for('auth.logout') }}">Logout</a>
+            <div class="title-user-menu">
+                <div style="color: #a0aec0; font-size: 12px; margin-bottom: 6px;">
+                    Welcome, <strong style="color: #63b3ed;">{{ current_user.display_name }}</strong>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <span style="background: #1a202c; padding: 2px 6px; border-radius: 3px; font-size: 10px; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ current_user.role }}
+                    </span>
+                </div>
+                <div class="user-menu">
+                    <button class="user-menu-button" onclick="toggleUserMenu()" aria-label="Menu">
+                    </button>
+                    <div class="user-menu-dropdown">
+                        <div class="user-menu-section">Navigation</div>
+                        <div class="user-menu-item">
+                            <a href="{{ url_for('main.guild_info') }}">Guild Information</a>
+                        </div>
+                        
+                        {% if current_user.can_edit_districts() %}
+                        <div class="user-menu-section">Management</div>
+                        <div class="user-menu-item">
+                            <a href="{{ url_for('main.guilds') }}">Manage Guilds</a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if current_user.role == 'admin' %}
+                        <div class="user-menu-item">
+                            <a href="{{ url_for('auth.manage_users') }}">Manage Users</a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="user-menu-section">Account</div>
+                        <div class="user-menu-item">
+                            <a href="{{ url_for('auth.character_profile') }}">Character Profile</a>
+                        </div>
+                        <div class="user-menu-item">
+                            <a href="{{ url_for('auth.change_password') }}">Change Password</a>
+                        </div>
+                        <div class="user-menu-item logout">
+                            <a href="{{ url_for('auth.logout') }}">Logout</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- 2-Column Layout -->
+        <div class="app-grid">
+            <!-- Left Panel: District Info -->
+            <div class="left-panel">
+                <div class="info-panel" style="background: transparent; border: none; padding: 0; box-shadow: none;">
+                    <div class="info-header">
+                        <h3 id="district-name">Click a district to learn more</h3>
+                        {% if current_user.can_edit_districts() %}
+                        <button class="edit-btn" id="edit-btn" onclick="editCurrentDistrict()" style="display: none;">Edit</button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Default content -->
+                    <div id="default-content">
+                        <p>Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
+                    </div>
+                    
+                    <!-- District details (hidden by default) -->
+                    <div id="district-details" style="display: none;">
+                        <div class="info-section">
+                            <h4 class="section-label">Description</h4>
+                            <p id="district-info"></p>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4 class="section-label">Status</h4>
+                            <p id="district-status"></p>
+                        </div>
+                        
+                        <div class="info-section" id="guilds-section" style="display: none;">
+                            <h4 class="section-label">Guilds Present</h4>
+                            <div id="guilds-list">
+                                <!-- Guild preview cards will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h4 class="section-label">Player Notes</h4>
+                            <div id="player-notes-section">
+                                <div id="player-notes-list">
+                                    <!-- Notes will be populated here -->
+                                </div>
+                                <div class="add-note-section">
+                                    <textarea id="new-note-content" placeholder="Add your note about this district..." rows="3"></textarea>
+                                    <div class="note-actions">
+                                        <button class="btn btn-small" onclick="savePlayerNote()">Add Note</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Map -->
+            <div class="right-panel">
+                <!-- Map Section -->
+                <div class="map-section">
         
         <svg id="map-svg" viewBox="0 0 400 400">
             <!-- Gradients and Patterns -->
@@ -123,91 +182,46 @@
             </text>
             {% endfor %}
         </svg>
-        
-        <div class="info-panel">
-            <div class="info-header">
-                <h3 id="district-name">Click a district to learn more</h3>
-                {% if current_user.can_edit_districts() %}
-                <button class="edit-btn" id="edit-btn" onclick="editCurrentDistrict()" style="display: none;">Edit</button>
-                {% endif %}
-            </div>
-            
-            <!-- Default content -->
-            <div id="default-content">
-                <p>Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
-            </div>
-            
-            <!-- District details (hidden by default) -->
-            <div id="district-details" style="display: none;">
-                <div class="info-section">
-                    <h4 class="section-label">Description</h4>
-                    <p id="district-info"></p>
                 </div>
-                
-                <div class="info-section">
-                    <h4 class="section-label">Status</h4>
-                    <p id="district-status"></p>
-                </div>
-                
-                <div class="info-section" id="guilds-section" style="display: none;">
-                    <h4 class="section-label">Guilds Present</h4>
-                    <div id="guilds-list">
-                        <!-- Guild preview cards will be populated here -->
-                    </div>
-                </div>
-                
-                <div class="info-section">
-                    <h4 class="section-label">Player Notes</h4>
-                    <div id="player-notes-section">
-                        <div id="player-notes-list">
-                            <!-- Notes will be populated here with format: -->
-                            <!-- <div class="player-note"> -->
-                            <!--   <strong>PlayerName:</strong> Note content [Edit] [Delete] (only for own notes) -->
-                            <!-- </div> -->
+
+                <!-- Legend Section -->
+                <div class="legend-section">
+                    <h4>District Types</h4>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(45deg, #742a2a, #f56565);"></div>
+                            <span>Sealed District</span>
                         </div>
-                        <div class="add-note-section">
-                            <textarea id="new-note-content" placeholder="Add your note about this district..." rows="3"></textarea>
-                            <div class="note-actions">
-                                <button class="btn btn-small" onclick="savePlayerNote()">Add Note</button>
-                            </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #d69e2e;"></div>
+                            <span>Commercial/Active</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #2b6cb0;"></div>
+                            <span>Working Class</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #38a169;"></div>
+                            <span>Residential</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #805ad5;"></div>
+                            <span>Religious/Admin</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #c53030;"></div>
+                            <span>Dangerous</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #553c9a;"></div>
+                            <span>Wealthy/Elite</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4a5568;"></div>
+                            <span>To Be Determined</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color" style="background: linear-gradient(45deg, #742a2a, #f56565);"></div>
-                <span>Sealed District (Dangerous)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #d69e2e;"></div>
-                <span>Commercial/Active (Gold)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #2b6cb0;"></div>
-                <span>Working Class/Industrial (Blue)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #38a169;"></div>
-                <span>Residential/Productive (Green)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #805ad5;"></div>
-                <span>Religious/Administrative (Purple)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #c53030;"></div>
-                <span>Dangerous/Polluted (Red)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #553c9a;"></div>
-                <span>Wealthy/Elite (Dark Purple)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #4a5568;"></div>
-                <span>To Be Determined (Gray)</span>
             </div>
         </div>
         

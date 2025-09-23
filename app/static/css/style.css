@@ -7,12 +7,149 @@ body {
 }
 
 .map-container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     background: #1a202c;
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.app-grid {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: 20px;
+    min-height: 600px;
+}
+
+.top-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.left-panel {
+    background: #2d3748;
+    border-radius: 10px;
+    padding: 20px;
+    overflow-y: auto;
+    min-height: 600px;
+    align-self: start;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 20px; /* Match left panel padding for symmetry */
+}
+
+.user-info-section {
+    background: #2d3748;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.legend-section {
+    background: #2d3748;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.legend-section h4 {
+    color: #63b3ed;
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    text-align: center;
+}
+
+.legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.map-section {
+    background: #2d3748;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#map-svg {
+    width: 95%;
+    height: auto;
+    border: 2px solid #4a5568;
+    border-radius: 10px;
+    background: radial-gradient(circle at center, #2d3748, #1a202c);
+}
+
+/* Title section with user menu */
+.title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #4a5568;
+    position: relative;
+}
+
+.title-content {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.title-user-menu {
+    background: #2d3748;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    min-width: 200px;
+    margin-left: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .app-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .legend {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+
+    .title-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .title-user-menu {
+        text-align: center;
+        min-width: auto;
+    }
 }
 
 .map-title {
