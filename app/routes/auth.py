@@ -12,12 +12,11 @@ def rate_limit_exceeded(e):
     return render_template('auth/login.html'), 429
 
 @bp.route('/login', methods=['GET', 'POST'])
-@limiter.limit("10 per minute")  # IP-based rate limiting
-@limiter.limit("5 per minute", key_func=lambda: request.form.get('username', ''))  # Username-based rate limiting
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-    
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -58,7 +57,7 @@ def manage_users():
 
 @bp.route('/admin/users/create', methods=['POST'])
 @login_required
-@limiter.limit("20 per hour")  # Limit user creation
+@limiter.limit("20 per hour")
 def create_user():
     if current_user.role != 'admin':
         return jsonify({'error': 'Access denied'}), 403

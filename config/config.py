@@ -17,6 +17,13 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
 
-    # Rate limiting configuration
-    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL') or 'memory://'
+    # Rate limiting configuration - use Redis if available, otherwise use PostgreSQL
+    redis_url = os.environ.get('REDIS_URL')
+    if redis_url:
+        RATELIMIT_STORAGE_URL = redis_url
+    elif database_url and 'postgresql' in database_url:
+        RATELIMIT_STORAGE_URL = database_url
+    else:
+        RATELIMIT_STORAGE_URL = 'memory://'
+
     RATELIMIT_DEFAULT = "1000 per hour"
