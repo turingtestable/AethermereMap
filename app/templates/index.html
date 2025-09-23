@@ -107,8 +107,42 @@
                 <button class="edit-btn" id="edit-btn" onclick="editCurrentDistrict()" style="display: none;">Edit</button>
                 {% endif %}
             </div>
-            <p id="district-info">Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
-            <p id="district-status"></p>
+            
+            <!-- Default content -->
+            <div id="default-content">
+                <p>Aethermere was once the magnificent city of Aetherspire, built around a great crystal spire. Now, twenty years after The Weeping, it stands as the largest surviving city with ~150,000 inhabitants, arranged in twelve districts like the hours of a clock around the dark pool where the spire fell.</p>
+            </div>
+            
+            <!-- District details (hidden by default) -->
+            <div id="district-details" style="display: none;">
+                <div class="info-section">
+                    <h4 class="section-label">Description</h4>
+                    <p id="district-info"></p>
+                </div>
+                
+                <div class="info-section">
+                    <h4 class="section-label">Status</h4>
+                    <p id="district-status"></p>
+                </div>
+                
+                <div class="info-section">
+                    <h4 class="section-label">Player Notes</h4>
+                    <div id="player-notes-section">
+                        <div id="player-notes-list">
+                            <!-- Notes will be populated here with format: -->
+                            <!-- <div class="player-note"> -->
+                            <!--   <strong>PlayerName:</strong> Note content [Edit] [Delete] (only for own notes) -->
+                            <!-- </div> -->
+                        </div>
+                        <div class="add-note-section">
+                            <textarea id="new-note-content" placeholder="Add your note about this district..." rows="3"></textarea>
+                            <div class="note-actions">
+                                <button class="btn btn-small" onclick="savePlayerNote()">Add Note</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="legend">
@@ -184,6 +218,11 @@
         {% endif %}
     </div>
 
+    <script>
+        // Pass current user info to JavaScript
+        const currentUserId = {{ current_user.id }};
+        const currentUserRole = '{{ current_user.role }}';
+    </script>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 </body>
 </html>
