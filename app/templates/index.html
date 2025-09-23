@@ -72,13 +72,25 @@
             {% endfor %}
             
             <!-- The Mere (Center) -->
+            {% set mere_district = districts|selectattr('district_number', 'equalto', 0)|first %}
+            {% if mere_district %}
+            <circle cx="200" cy="200" r="45" 
+                  class="district mere" 
+                  data-id="{{ mere_district.id }}"
+                  data-name="{{ mere_district.name }}"
+                  data-info="{{ mere_district.info or '' }}"
+                  data-status="{{ mere_district.status or 'Unknown' }}"
+                  data-color="{{ mere_district.color }}"/>
+            {% else %}
             <circle cx="200" cy="200" r="45" class="mere"/>
+            {% endif %}
             
             <!-- District Labels -->
             {% for district in districts %}
             <text x="{{ district.label_x }}" y="{{ district.label_y }}" 
                   class="district-label"
-                  data-district-id="{{ district.id }}">
+                  data-district-id="{{ district.id }}"
+                  {% if district.district_number == 0 %}style="fill:#63b3ed; font-size:14px; font-weight:bold;"{% endif %}>
                 {% if '(' in district.name %}
                     {{ district.name.split('(')[0].strip() }}
                 {% else %}
@@ -86,9 +98,6 @@
                 {% endif %}
             </text>
             {% endfor %}
-            
-            <!-- The Mere Label -->
-            <text x="200" y="205" class="district-label" style="fill:#63b3ed; font-size:14px; font-weight:bold;">The Mere</text>
         </svg>
         
         <div class="info-panel">

@@ -87,6 +87,14 @@ function openEditPanel(districtElement, data) {
     document.getElementById('edit-status').value = data.status;
     document.getElementById('edit-type').value = data.color || '#4a5568';
     
+    // Hide color field for The Mere
+    const colorGroup = document.getElementById('edit-type').closest('.form-group');
+    if (districtElement.classList.contains('mere')) {
+        if (colorGroup) colorGroup.style.display = 'none';
+    } else {
+        if (colorGroup) colorGroup.style.display = 'block';
+    }
+    
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('edit-panel').style.display = 'block';
 }
@@ -103,16 +111,20 @@ function saveDistrict() {
     const newName = document.getElementById('edit-name').value;
     const newInfo = document.getElementById('edit-info').value;
     const newStatus = document.getElementById('edit-status').value;
-    const newColor = document.getElementById('edit-type').value;
     const districtId = currentEditingDistrict.dataset.id;
     
     // Prepare data for API call
     const updateData = {
         name: newName,
         info: newInfo,
-        status: newStatus,
-        color: newColor
+        status: newStatus
     };
+    
+    // Only include color for non-Mere districts
+    if (!currentEditingDistrict.classList.contains('mere')) {
+        const newColor = document.getElementById('edit-type').value;
+        updateData.color = newColor;
+    }
     
     // Make API call to update district
     fetch(`/api/districts/${districtId}`, {
@@ -129,15 +141,19 @@ function saveDistrict() {
             currentEditingDistrict.dataset.name = newName;
             currentEditingDistrict.dataset.info = newInfo;
             currentEditingDistrict.dataset.status = newStatus;
-            currentEditingDistrict.dataset.color = newColor;
             
-            // Update visual appearance
-            if (newColor === 'sealed') {
-                currentEditingDistrict.classList.add('sealed');
-                currentEditingDistrict.style.fill = '';
-            } else {
-                currentEditingDistrict.classList.remove('sealed');
-                currentEditingDistrict.style.fill = newColor;
+            // Update visual appearance (skip for The Mere)
+            if (!currentEditingDistrict.classList.contains('mere')) {
+                const newColor = document.getElementById('edit-type').value;
+                currentEditingDistrict.dataset.color = newColor;
+                
+                if (newColor === 'sealed') {
+                    currentEditingDistrict.classList.add('sealed');
+                    currentEditingDistrict.style.fill = '';
+                } else {
+                    currentEditingDistrict.classList.remove('sealed');
+                    currentEditingDistrict.style.fill = newColor;
+                }
             }
             
             // Update the district label text
