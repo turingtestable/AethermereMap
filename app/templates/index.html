@@ -8,51 +8,53 @@
 </head>
 <body>
     <div class="map-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h1 class="map-title" style="margin-bottom: 5px;">The City of Aethermere</h1>
-                <p class="map-subtitle" style="margin-bottom: 0;">Twenty years after The Weeping</p>
+        <!-- Centered Title -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 class="map-title" style="margin-bottom: 5px;">The City of Aethermere</h1>
+            <p class="map-subtitle" style="margin-bottom: 0;">Twenty years after The Weeping</p>
+        </div>
+        
+        <!-- User Info and Menu (Top Right) -->
+        <div style="position: absolute; top: 20px; right: 20px; text-align: center;">
+            <div style="color: #a0aec0; font-size: 13px; margin-bottom: 8px;">
+                Welcome, <strong style="color: #63b3ed;">{{ current_user.display_name }}</strong>
             </div>
-            <div style="text-align: right;">
-                <div style="color: #a0aec0; font-size: 14px; margin-bottom: 5px;">
-                    Welcome, <strong style="color: #63b3ed;">{{ current_user.display_name }}</strong>
-                    <span style="background: #2d3748; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin-left: 5px;">
-                        {{ current_user.role.upper() }}
-                    </span>
-                </div>
-                <div class="user-menu">
-                    <button class="user-menu-button" onclick="toggleUserMenu()">
-                        Menu
-                    </button>
-                    <div class="user-menu-dropdown">
-                        <div class="user-menu-section">Navigation</div>
-                        <div class="user-menu-item">
-                            <a href="{{ url_for('main.guild_info') }}">Guild Information</a>
-                        </div>
-                        
-                        {% if current_user.can_edit_districts() %}
-                        <div class="user-menu-section">Management</div>
-                        <div class="user-menu-item">
-                            <a href="{{ url_for('main.guilds') }}">Manage Guilds</a>
-                        </div>
-                        {% endif %}
-                        
-                        {% if current_user.role == 'admin' %}
-                        <div class="user-menu-item">
-                            <a href="{{ url_for('auth.manage_users') }}">Manage Users</a>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="user-menu-section">Account</div>
-                        <div class="user-menu-item">
-                            <a href="{{ url_for('auth.character_profile') }}">Character Profile</a>
-                        </div>
-                        <div class="user-menu-item">
-                            <a href="{{ url_for('auth.change_password') }}">Change Password</a>
-                        </div>
-                        <div class="user-menu-item logout">
-                            <a href="{{ url_for('auth.logout') }}">Logout</a>
-                        </div>
+            <div style="margin-bottom: 8px;">
+                <span style="background: #2d3748; padding: 3px 8px; border-radius: 4px; font-size: 11px; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ current_user.role }}
+                </span>
+            </div>
+            <div class="user-menu">
+                <button class="user-menu-button" onclick="toggleUserMenu()" aria-label="Menu">
+                </button>
+                <div class="user-menu-dropdown">
+                    <div class="user-menu-section">Navigation</div>
+                    <div class="user-menu-item">
+                        <a href="{{ url_for('main.guild_info') }}">Guild Information</a>
+                    </div>
+                    
+                    {% if current_user.can_edit_districts() %}
+                    <div class="user-menu-section">Management</div>
+                    <div class="user-menu-item">
+                        <a href="{{ url_for('main.guilds') }}">Manage Guilds</a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if current_user.role == 'admin' %}
+                    <div class="user-menu-item">
+                        <a href="{{ url_for('auth.manage_users') }}">Manage Users</a>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="user-menu-section">Account</div>
+                    <div class="user-menu-item">
+                        <a href="{{ url_for('auth.character_profile') }}">Character Profile</a>
+                    </div>
+                    <div class="user-menu-item">
+                        <a href="{{ url_for('auth.change_password') }}">Change Password</a>
+                    </div>
+                    <div class="user-menu-item logout">
+                        <a href="{{ url_for('auth.logout') }}">Logout</a>
                     </div>
                 </div>
             </div>

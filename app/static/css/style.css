@@ -369,30 +369,54 @@ body {
 .user-menu-button {
     background: #2d3748;
     border: 1px solid #4a5568;
-    color: #63b3ed;
-    padding: 8px 12px;
+    color: #e2e8f0;
+    padding: 10px 12px;
     border-radius: 5px;
     cursor: pointer;
     text-decoration: none;
     font-size: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    position: relative;
+    transition: all 0.2s ease;
 }
 
 .user-menu-button:hover {
     background: #4a5568;
-    color: #90cdf4;
+    border-color: #63b3ed;
 }
 
-.user-menu-button::after {
-    content: "▼";
-    font-size: 10px;
-    transition: transform 0.2s ease;
+/* Hamburger icon */
+.user-menu-button::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    box-shadow: 
+        0 -6px 0 currentColor,
+        0 6px 0 currentColor;
+    transition: all 0.3s ease;
+}
+
+/* Transform to X when open */
+.user-menu.open .user-menu-button::before {
+    transform: rotate(45deg);
+    box-shadow: 
+        0 0 0 currentColor,
+        0 0 0 currentColor;
 }
 
 .user-menu.open .user-menu-button::after {
-    transform: rotate(180deg);
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    transform: rotate(-45deg);
 }
 
 .user-menu-dropdown {
