@@ -51,18 +51,20 @@ def district_detail(district_id):
             district_data['guilds'].append(guild_data)
         
         # Get city-wide guilds (guilds with no specific headquarters)
-        citywide_guilds = Guild.query.filter_by(headquarters_district_id=None).all()
-        for guild in citywide_guilds:
-            guild_data = {
-                'id': guild.id,
-                'name': guild.name,
-                'description': guild.description,
-                'leadership': guild.leadership,
-                'status': guild.status,
-                'influence': guild.influence,
-                'relationship_to_district': 'citywide'
-            }
-            district_data['guilds'].append(guild_data)
+        # Only show citywide guilds in districts that aren't sealed or forbidden
+        if district.status != 'Sealed - Dangerous' and district.color != 'sealed' and 'forbidden' not in (district.status or '').lower():
+            citywide_guilds = Guild.query.filter_by(headquarters_district_id=None).all()
+            for guild in citywide_guilds:
+                guild_data = {
+                    'id': guild.id,
+                    'name': guild.name,
+                    'description': guild.description,
+                    'leadership': guild.leadership,
+                    'status': guild.status,
+                    'influence': guild.influence,
+                    'relationship_to_district': 'citywide'
+                }
+                district_data['guilds'].append(guild_data)
         
         return jsonify(district_data)
     
